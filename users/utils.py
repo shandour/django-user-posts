@@ -11,7 +11,7 @@ from .models import Company
 
 email_hunter_base_url = 'https://api.hunter.io/'
 relevant_enrichment_fields = [
-    'name', 'legalName', 'location', 'description', 'site'
+    'name', 'legalName', 'location', 'description', 'domain'
 ]
 
 
@@ -73,7 +73,11 @@ def process_clearbit_response(response):
         if k in relevant_enrichment_fields:
             data[k] = v
 
+    if data.get('domain'):
+        data['site'] = data.pop('domain')
+
     return data
+
 
 def handle_nested_company_object(user, company_data):
     with transaction.atomic():

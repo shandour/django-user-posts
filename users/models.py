@@ -52,4 +52,4 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return ' '.join([self.first_name, self.last_name])
+        return f'{str(self.pk)}; {self.email}'

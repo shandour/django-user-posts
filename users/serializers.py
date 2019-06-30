@@ -30,6 +30,7 @@ class UserSerializer(
     class Meta:
         model = User
         fields = (
+            'id',
             'first_name',
             'last_name',
             'email',
@@ -37,11 +38,31 @@ class UserSerializer(
             'location',
         )
 
+    def to_internal_value(self, data):
+        company = data.get('company')
+        user = self.instance
+        if company:
+            if user.company:
+                if not company.get('id'):
+                    raise serializers.ValidationError(
+                        {'company': _('No company id provided')})
+                elif company.get('id') != user.company.pk:
+                    raise serializers.ValidationError(
+                        {'company': _('Incorrect company id. '
+                                      f'Should be {user.company.pk}')
+                        })
+
+        return super().to_internal_value(data)
+
     # an explicit update method for handling nested fields
     def update(self, instance, validated_data):
         company_data = validated_data.pop('company', None)
         user = super().update(instance, validated_data)
-        handle_nested_company_object(user, company_data)
+
+        if company_data and user.company and not company_data.get('id'):
+            company_data['id'] = user.company.pk
+
+            handle_nested_company_object(user, company_data)
 
         return user
 
@@ -65,6 +86,7 @@ class RegistrationSerializer(
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data.pop('password')
+        data['id'] = instance.pk
 
         return data
 
@@ -88,8 +110,11 @@ class RegistrationSerializer(
     # an explicit create method for handling nested fields
     def create(self, validated_data):
         company_data = validated_data.pop('company', None)
+        password = validated_data.pop('password')
         user = super().create(validated_data)
+        user.set_password(password)
+        user.save()
+
         handle_nested_company_object(user, company_data)
 
         return user
-

@@ -5,6 +5,7 @@ from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
+from requests.exceptions import HTTPError
 
 from .serializers import UserSerializer, RegistrationSerializer
 from .utils import process_clearbit_response
@@ -48,17 +49,23 @@ def get_info(request):
     if not email and not domain:
         return Response(
             {'errors': 'Please specify email or domain.'},
-            status=status.HTTP_400_BAD_REQUESTm
+            status=status.HTTP_400_BAD_REQUEST
         )
 
     clearbit_class = clearbit.Enrichment
     if company:
         clearbit_class = clearbit.Company
 
-    elif email:
-        resp = clearbit_class.find(email=email, stream=True)
-    elif domain:
-        resp = clearbit_class.find(domain=domain, stream=True)
+    try:
+        if email:
+            resp = clearbit_class.find(email=email, stream=True)
+        elif domain:
+            resp = clearbit_class.find(domain=domain, stream=True)
+    except HTTPError:
+        return Response(
+            {'errors': 'Error while processing your request.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     return Response(
         process_clearbit_response(resp),
