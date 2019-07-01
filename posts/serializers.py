@@ -5,24 +5,25 @@ from users.serializers import UserSerializer
 
 
 class PostSerializer(serializers.ModelSerializer):
+    stats = serializers.SerializerMethodField(read_only=True)
+    user = UserSerializer(read_only=True)
+
     class Meta:
-        fields = '__all__'
         model = Post
+        fields = (
+            'id',
+            'title',
+            'content',
+            'created_at',
+            'last_edited',
+            'user',
+            'stats',
+        )
 
-    def to_representation(self, obj):
-        data = super().to_representation(obj)
-        data['user'] = UserSerializer(obj.user).data
+    def get_stats(self, obj):
+        return {
+            'score': obj.score,
+            'likes': obj.likes,
+            'dislikes': obj.dislikes,
+        }
 
-        return data
-
-    def to_internal_value(self, data):
-        request = self.context['request']
-        check_ownership = self.context.get('check_ownership', False)
-
-        if check_ownership and not Post.objects.filter(
-                pk=data['id'], user=request.user):
-            raise serializers.ValidationError({
-                'non_field_error': 'You are not permitted to edit this post'
-            })
-
-        return super().to_internal_value(data)

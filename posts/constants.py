@@ -7,4 +7,4 @@ class REACTION_STATUSES(enum.Enum):
 
     @classmethod
     def values(cls):
-        return [el.value for el in cls]
+        return [str(el.value) for el in cls]

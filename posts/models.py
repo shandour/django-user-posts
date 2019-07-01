@@ -1,7 +1,6 @@
 import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.utils.translation import ugettext_lazy as _
 
 
 User = get_user_model()
@@ -18,6 +17,17 @@ class Post(models.Model):
     upvoted_by = models.ManyToManyField(User, related_name='liked_posts')
     downvoted_by = models.ManyToManyField(User, related_name='disliked_posts')
 
+    def __str__(self):
+        return f'Post {self.pk} by {self.user.email}'
+
     @property
     def score(self):
         return self.upvoted_by.count() - self.downvoted_by.count()
+
+    @property
+    def likes(self):
+        return self.upvoted_by.count()
+
+    @property
+    def dislikes(self):
+        return self.downvoted_by.count()

@@ -145,7 +145,10 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'users.User'
-ACCESS_TOKEN_LIFETIME = timedelta(days=30)
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
+}
 
 # external apis
 CLEARBIT_API_KEY = os.environ.get('CLEARBIT_API_KEY')
