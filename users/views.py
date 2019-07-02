@@ -19,10 +19,6 @@ class Register(generics.CreateAPIView):
     permission_classes = []
     serializer_class = RegistrationSerializer
 
-    def post(self, request):
-        print(request.data)
-        return super().post(request)
-
 
 class ManipulateUserView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
