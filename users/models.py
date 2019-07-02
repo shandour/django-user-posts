@@ -29,7 +29,7 @@ class Company(models.Model):
     legal_name = models.CharField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField()
-    site = models.CharField(max_length=100, validators=[URLValidator])
+    domain = models.CharField(max_length=100, validators=[URLValidator])
 
 
 class User(AbstractBaseUser, PermissionsMixin):

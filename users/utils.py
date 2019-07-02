@@ -73,9 +73,6 @@ def process_clearbit_response(response):
         if k in relevant_enrichment_fields:
             data[k] = v
 
-    if data.get('domain'):
-        data['site'] = data.pop('domain')
-
     return data
 
 

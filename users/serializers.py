@@ -18,7 +18,7 @@ class CompanySerializer(serializers.ModelSerializer):
             'legal_name',
             'location',
             'description',
-            'site',
+            'domain',
         )
 
 
