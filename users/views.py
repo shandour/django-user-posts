@@ -67,3 +67,8 @@ def get_info(request):
         process_clearbit_response(resp),
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(['GET'])
+def current_user(request):
+    return Response(UserSerializer(request.user).data)

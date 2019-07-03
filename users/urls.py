@@ -7,6 +7,8 @@ user_api_patterns = [
     path('register/', views.Register.as_view()),
     path('<uuid:pk>/', views.ManipulateUserView.as_view()),
     path('enrichment/', views.get_info),
+    path('current-user/', views.current_user),
+
     path('token/', jwt_views.TokenObtainPairView.as_view()),
     path('token/refresh/', jwt_views.TokenRefreshView.as_view()),
 ]
