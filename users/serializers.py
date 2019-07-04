@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Company
 from .utils import check_email, handle_nested_company_object
@@ -87,6 +89,9 @@ class RegistrationSerializer(
         data = super().to_representation(instance)
         data.pop('password')
         data['id'] = instance.pk
+        refresh = RefreshToken.for_user(instance)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
 
         return data
 
@@ -118,3 +123,11 @@ class RegistrationSerializer(
         handle_nested_company_object(user, company_data)
 
         return user
+
+
+class CustomizedTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, data):
+        data = super().validate(data)
+        data['user'] = UserSerializer(self.user).data
+
+        return data

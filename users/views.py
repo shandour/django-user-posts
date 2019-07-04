@@ -3,11 +3,15 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import status, generics
 from rest_framework.decorators import api_view
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from requests.exceptions import HTTPError
 
-from .serializers import UserSerializer, RegistrationSerializer
+from .serializers import (
+    UserSerializer,
+    RegistrationSerializer,
+    CustomizedTokenObtainPairSerializer)
 from .utils import process_clearbit_response
 
 
@@ -72,3 +76,7 @@ def get_info(request):
 @api_view(['GET'])
 def current_user(request):
     return Response(UserSerializer(request.user).data)
+
+
+class CustomizedObtainTokenView(TokenObtainPairView):
+    serializer_class = CustomizedTokenObtainPairSerializer

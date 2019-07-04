@@ -9,7 +9,7 @@ user_api_patterns = [
     path('enrichment/', views.get_info),
     path('current-user/', views.current_user),
 
-    path('token/', jwt_views.TokenObtainPairView.as_view()),
+    path('token/', views.CustomizedObtainTokenView.as_view()),
     path('token/refresh/', jwt_views.TokenRefreshView.as_view()),
 ]
 
