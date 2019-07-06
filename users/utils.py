@@ -79,12 +79,13 @@ def process_clearbit_response(response):
 
     person = response.pop('person', None)
     if person:
+        data['person'] = {}
         for k, v in person.items():
             if k == 'name':
-                data['first_name'] = v.get('givenName')
-                data['last_name'] = v.get('familyName')
+                data['person']['first_name'] = v.get('givenName')
+                data['person']['last_name'] = v.get('familyName')
             elif k == 'location':
-                data['location'] = v
+                data['person']['location'] = v
         company = response.pop('company', None)
         if company:
             data['company'] = process_company_data(company)

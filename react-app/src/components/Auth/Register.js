@@ -34,7 +34,7 @@ export default ({history}) => {
     const [data, setData] = useState({'company': {}});
     const [enrichmentMessage, setEnrichmentMessage] = useState('');
 
-    // TODO: check backend views; does 'company' kw even make sense?
+    // TODO: NOT CHECKED OR IMPLEMENTED
     const fetchCompanyData = (queryType, queryByCompany=False) => async () => {
         setSubmitting(true);
         setEnrichmentErrors({});
@@ -56,8 +56,17 @@ export default ({history}) => {
                     () => setEnrichmentMessage(''),
                     3000
                 );
-            } else if (company) {
-                
+            } else if (company && resp.company) {
+                data.company = resp.company;
+                setData(data);
+            } else {
+                if (resp.data.person) {
+                    data = resp.data.paerson;
+                }
+                if (resp.data.company) {
+                    data.company = resp.data.company;
+                }
+                setData(data);
             }
         } catch ({response: {data}}) {
             setEnrichmentErrors(data);
