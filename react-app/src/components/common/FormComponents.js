@@ -20,3 +20,8 @@ export const TextInput = styled(Field)`
 export const ErrorDiv = styled.div`
   color: red;
 `;
+
+export const GenericTextInput = styled.input`
+  ${textInputCss}
+  height: 40px;
+`;
