@@ -21,13 +21,50 @@ const companyFields = {
     domain: ['Fill in your company dmain', 'Company domain', 'url', true, 100]
 };
 
+// enrichment API options
+const EMAIL = 'email';
+const DOMAIN = 'domain';
 
 export default ({history}) => {
     const { login } = useContext(UserContext);
     const [showCompanyForm, setShowCompanyForm] = useState(false);
     const [isSubmitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    const [enrichmentErrors, setEnrichmentErrors] = useState({});
     const [data, setData] = useState({'company': {}});
+    const [enrichmentMessage, setEnrichmentMessage] = useState('');
+
+    // TODO: check backend views; does 'company' kw even make sense?
+    const fetchCompanyData = (queryType, queryByCompany=False) => async () => {
+        setSubmitting(true);
+        setEnrichmentErrors({});
+        const queryParams = {};
+        try {
+            if (queryType === EMAIL) {
+                queryParams[queryType] = data.email;
+            }
+            else if (queryType === DOMAIN) {
+                queryParams[queryType] = data.company.domain;
+            } else {
+                return;
+            }
+            queryParams.company = queryByCompany;
+            const resp = await axios.get('users/enrichment', queryParams);
+            if (!isEmpty(resp.data)) {
+                setEnrichmentMessage('Nothing found to satisfy your request.')
+                setTimeout(
+                    () => setEnrichmentMessage(''),
+                    3000
+                );
+            } else if (company) {
+                
+            }
+        } catch ({response: {data}}) {
+            setEnrichmentErrors(data);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const setField = (value, fieldName) => {
         data[fieldName] = value;
@@ -44,6 +81,7 @@ export default ({history}) => {
     const onSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+        setEnrichmentErrors({});
         setSubmitting(true);
         console.log(data)
 
@@ -70,6 +108,10 @@ export default ({history}) => {
 
     return (
             <form onSubmit={onSubmit}>
+            {enrichmentMessage && <div>{enrichmentMessage}</div>}
+        {enrichmentErrors.errors &&
+         <ErrorDiv>{enrichmentErrors.errors}</ErrorDiv>
+        }
             {Object.entries(userFields).map(fieldData => (
                     <div key={fieldData[0]}>
                     <label htmlFor={fieldData[0]}>{fieldData[1][1]}</label>
