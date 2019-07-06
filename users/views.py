@@ -52,6 +52,12 @@ def get_info(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    if company and email:
+        return Response(
+            {'errors': 'Company queries only accept the domain parameter.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     clearbit_class = clearbit.Enrichment
     if company:
         clearbit_class = clearbit.Company

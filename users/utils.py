@@ -10,7 +10,7 @@ from .models import Company
 
 
 email_hunter_base_url = 'https://api.hunter.io/'
-relevant_enrichment_fields = [
+relevant_enrichment_company_fields = [
     'name', 'legalName', 'location', 'description', 'domain'
 ]
 
@@ -64,14 +64,32 @@ def check_email(email):
     return success, site_down
 
 
+def process_company_data(data_to_process):
+    data = {}
+    for k, v in data_to_process.items():
+        if k in relevant_enrichment_company_fields:
+            data[k] = v
+    return data
+
+
 def process_clearbit_response(response):
     data = {}
     if not response:
         return data
 
-    for k, v in response.items():
-        if k in relevant_enrichment_fields:
-            data[k] = v
+    person = response.pop('person', None)
+    if person:
+        for k, v in person.items():
+            if k == 'name':
+                data['first_name'] = v.get('givenName')
+                data['last_name'] = v.get('familyName')
+            elif k == 'location':
+                data['location'] = v
+        company = response.pop('company', None)
+        if company:
+            data['company'] = process_company_data(company)
+    else:
+        data['company'] = process_company_data(response)
 
     return data
 
