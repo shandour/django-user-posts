@@ -34,11 +34,11 @@ export default ({history}) => {
     const [data, setData] = useState({'company': {}});
     const [enrichmentMessage, setEnrichmentMessage] = useState('');
 
-    // TODO: NOT CHECKED OR IMPLEMENTED
-    const fetchCompanyData = (queryType, queryByCompany=False) => async () => {
+    const fetchEnrichmentData = (queryType, queryByCompany=false) => async () => {
         setSubmitting(true);
         setEnrichmentErrors({});
         const queryParams = {};
+        let enrichedData = {...data};
         try {
             if (queryType === EMAIL) {
                 queryParams[queryType] = data.email;
@@ -49,42 +49,48 @@ export default ({history}) => {
                 return;
             }
             queryParams.company = queryByCompany;
-            const resp = await axios.get('users/enrichment', queryParams);
-            if (!isEmpty(resp.data)) {
+            const {data: respData} = await axios.get(
+                'users/enrichment/',
+                {params: queryParams}
+            );
+            if (isEmpty(respData)) {
                 setEnrichmentMessage('Nothing found to satisfy your request.')
                 setTimeout(
                     () => setEnrichmentMessage(''),
                     3000
                 );
-            } else if (company && resp.company) {
-                data.company = resp.company;
-                setData(data);
+            } else if (queryByCompany && respData) {
+                enrichedData.company = respData.company;
+                setData(enrichedData);
             } else {
-                if (resp.data.person) {
-                    data = resp.data.paerson;
+                if (respData.person) {
+                    enrichedData = respData.person;
                 }
-                if (resp.data.company) {
-                    data.company = resp.data.company;
+                if (respData.company) {
+                    enrichedData.company = respData.company;
                 }
-                setData(data);
+                enrichedData.email = data.email;
+                setData(enrichedData);
             }
-        } catch ({response: {data}}) {
-            setEnrichmentErrors(data);
+        } catch ({response: {data: errData}}) {
+            setEnrichmentErrors(errData);
         } finally {
             setSubmitting(false);
         }
     };
 
     const setField = (value, fieldName) => {
-        data[fieldName] = value;
-        setData(data);
+        const dataCopy = {...data};
+        dataCopy[fieldName] = value;
+        setData(dataCopy);
     };
 
     const setCompanyField = (value, fieldName) => {
         const {company} = data;
+        const dataCopy = {...data};
         company[fieldName] = value;
-        data.company = company;
-        setData(data);
+        dataCopy.company = company;
+        setData(dataCopy);
     };
 
     const onSubmit = async (e) => {
@@ -92,7 +98,6 @@ export default ({history}) => {
         setErrors({});
         setEnrichmentErrors({});
         setSubmitting(true);
-        console.log(data)
 
         try {
             if (data.password !== data.passwordConfirmation) {
@@ -121,10 +126,14 @@ export default ({history}) => {
         {enrichmentErrors.errors &&
          <ErrorDiv>{enrichmentErrors.errors}</ErrorDiv>
         }
+            <button type="button" onClick={
+                fetchEnrichmentData(EMAIL)
+            }>Autofill based on email</button>
             {Object.entries(userFields).map(fieldData => (
                     <div key={fieldData[0]}>
                     <label htmlFor={fieldData[0]}>{fieldData[1][1]}</label>
                     <TextInput
+                value={data[fieldData[0]] || ''}
                 type={fieldData[1][2]}
                 name={fieldData[0]}
                 placeholder={fieldData[1][0]}
@@ -139,18 +148,15 @@ export default ({history}) => {
                      <ErrorDiv>{errors[fieldData[0]].join('. ')}</ErrorDiv>
                     }
                 </div>
-            ))}
+            )
+                                           )}
             <input type="checkbox" value={showCompanyForm} onChange={() => setShowCompanyForm(!showCompanyForm)} />
 
 
         {showCompanyForm && (
-            <>
+                <>
                 <button type="button" onClick={
-                    // fetch stuff, if smth fill
-                    () => {}
-                }>Autofill based on email</button>
-                <button type="button" onClick={
-                    () => {}
+                    fetchEnrichmentData(DOMAIN, true)
                 }>Autofill based on domain</button>
 
             {Object.entries(companyFields).map(fieldData => (
@@ -158,6 +164,7 @@ export default ({history}) => {
                     <label htmlFor={fieldData[0]}>{fieldData[1][1]}</label>
                     {fieldData[1][2] !== 'textarea' ? (
                             <TextInput
+                        value={data.company ? data.company[fieldData[0]] : ''}
                         type={fieldData[1][2]}
                         name={fieldData[0]}
                         placeholder={fieldData[1][0]}
@@ -169,7 +176,8 @@ export default ({history}) => {
                         }}
                             />) :(
                                     <textarea
-                                                key={fieldData[0]}
+                                value={data.company ? data.company[fieldData[0]] : ''}
+                                key={fieldData[0]}
                                 name={fieldData[0]}
                                 placeholder={fieldData[1][0]}
                                 disabled={isSubmitting}
@@ -185,18 +193,18 @@ export default ({history}) => {
                 </div>
             ))}
 
-                </>
+            </>
         )}
 
-                    <button disabled={isSubmitting} type="submit">
-                    Register
-                </button>
-                    {errors.nonFieldErrors &&
-                     <ErrorDiv>{errors.nonFieldErrors.join('. ')}</ErrorDiv>
-                    }
-                {errors.detail &&
-                 <ErrorDiv>{errors.detail}</ErrorDiv>
-                }
-                </form>
+            <button disabled={isSubmitting} type="submit">
+            Register
+        </button>
+            {errors.nonFieldErrors &&
+             <ErrorDiv>{errors.nonFieldErrors.join('. ')}</ErrorDiv>
+            }
+        {errors.detail &&
+         <ErrorDiv>{errors.detail}</ErrorDiv>
+        }
+        </form>
     );
 }
