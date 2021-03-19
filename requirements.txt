@@ -2,7 +2,7 @@ clearbit==0.1.7
 dj-database-url==0.5.0
 Django==2.2.2
 django-cors-headers==3.0.2
-djangorestframework==3.9.4
+djangorestframework==3.11.2
 djangorestframework-camel-case==1.0.3
 djangorestframework-simplejwt==4.3.0
 Faker==1.0.7
